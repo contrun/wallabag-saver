@@ -29,7 +29,8 @@ You need the [rust toolchain](https://rustup.rs/) or [nix](https://nixos.org/dow
 
 ### Installation
 
-You may either install with cargo `cargo install --git https://github.com/contrun/wallabag-saver`
+You can download the binaries from [Releases](https://github.com/contrun/wallabag-saver/releases).
+Or build it manually with cargo `cargo install --git https://github.com/contrun/wallabag-saver`
 or with nix `nix profile install github:contrun/wallabag-saver`.
 
 <!-- USAGE -->
