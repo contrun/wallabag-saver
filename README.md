@@ -25,13 +25,12 @@ I decide to build a client with async rust.
 
 ### Prerequisites
 
-You need the [rust toolchain](https://rustup.rs/) to build this project.
+You need the [rust toolchain](https://rustup.rs/) or [nix](https://nixos.org/download.html#download-nix) to build this project.
 
 ### Installation
 
-```
-cargo install --git https://github.com/contrun/wallabag-saver
-```
+You may either install with cargo `cargo install --git https://github.com/contrun/wallabag-saver`
+or with nix `nix profile install github:contrun/wallabag-saver`.
 
 <!-- USAGE -->
 ## Usage
