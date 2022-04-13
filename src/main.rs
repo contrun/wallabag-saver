@@ -30,7 +30,11 @@ impl From<&EntryInfo> for EntryID {
 #[clap(author, version, about, long_about = None)]
 struct Args {
     #[clap(short, long)]
+    create: bool,
+    #[clap(short, long)]
     archive: bool,
+    #[clap(short, long)]
+    delete: bool,
     #[clap(last = true)]
     urls: Vec<String>,
 }
@@ -41,14 +45,20 @@ pub struct State {
 }
 
 impl State {
-    async fn new<T: Into<String>>(urls: Vec<T>) -> ClientResult<Self> {
+    async fn new<T: Into<String>>(urls: Vec<T>, create_non_existent_entries: bool) -> ClientResult<Self> {
         let mut s = Self::new_with_ids_from_wallabag(urls).await?;
-        s.maybe_create_non_existent_entries().await;
+        if create_non_existent_entries {
+            s.maybe_create_non_existent_entries().await;
+        }
         Ok(s)
     }
 
-    async fn new_from_archived_urls<T: Into<String>>(urls: Vec<T>) -> ClientResult<Self> {
-        let mut s = Self::new(urls).await?;
+    async fn create_urls<T: Into<String>>(urls: Vec<T>) -> ClientResult<Self> {
+        Self::new(urls, true).await
+    }
+
+    async fn archive_urls<T: Into<String>>(urls: Vec<T>) -> ClientResult<Self> {
+        let mut s = Self::create_urls(urls).await?;
         let mut url_entries: HashMap<String, EntryID> = s
             .inner
             .iter()
@@ -81,6 +91,28 @@ impl State {
         let results: HashMap<String, Entry> =
             try_join_all(url_entries.into_iter().map(|(url, e)| async move {
                 let entry = archive_entry_with_id(e).await;
+                entry.map(|e| (url, e))
+            }))
+            .await?
+            .into_iter()
+            .collect();
+
+        s.merge_entries(results);
+
+        Ok(s)
+    }
+
+    async fn delete_urls<T: Into<String>>(urls: Vec<T>) -> ClientResult<Self> {
+        let mut s = Self::new_with_ids_from_wallabag(urls).await?;
+        let url_entries: HashMap<String, EntryID> = s
+            .inner
+            .iter()
+            .filter_map(|(url, entry)| entry.as_ref().map(|e| (url.to_owned(), e.into())))
+            .collect();
+
+        let results: HashMap<String, Entry> =
+            try_join_all(url_entries.into_iter().map(|(url, e)| async move {
+                let entry = delete_entry_with_id(e).await;
                 entry.map(|e| (url, e))
             }))
             .await?
@@ -135,6 +167,9 @@ impl State {
     }
 
     async fn fill_in_ids(&mut self) -> ClientResult<()> {
+        if self.inner.len() == 0 {
+            return Ok(());
+        }
         let mut client = get_client();
         let check_urls_result = client.check_urls_exist(self.inner.keys().collect()).await?;
         dbg!(&check_urls_result);
@@ -218,20 +253,33 @@ async fn create_entry_for_url(url: &str) -> ClientResult<Entry> {
     client.create_entry(&e).await
 }
 
+async fn delete_entry_with_id(id: EntryID) -> ClientResult<Entry> {
+    let mut client = get_client();
+    client.delete_entry(id).await
+}
+
 #[async_std::main]
 async fn main() -> Result<()> {
     let args = Args::parse();
 
     let res = if args.archive {
-        State::new_from_archived_urls(args.urls)
+        State::archive_urls(args.urls)
             .await
             .context("Failed to add archived entries")?
+    } else if args.delete {
+        State::delete_urls(args.urls)
+            .await
+            .context("Failed to delete entries")?
     } else {
-        State::new(args.urls)
+        State::create_urls(args.urls)
             .await
             .context("Failed to add entries")?
     };
 
     dbg!(&res);
-    res.check()
+    if !args.delete {
+        res.check()
+    } else {
+        Ok(())
+    }
 }

@@ -2,7 +2,7 @@
 ## About The Project
 
 This package grow from my own need to continuously move saved articles from pocket to wallabag.
-There are many a few wallabag command line utilites to save url to wallabag,
+There are a few wallabag command line utilites to save url to wallabag,
 e.g. [Nepochal/wallabag-cli](https://github.com/Nepochal/wallabag-cli),
 [artur-shaik/wallabag-client](https://github.com/artur-shaik/wallabag-client),
 [gmolveau/pocket_to_wallabag](https://github.com/gmolveau/pocket_to_wallabag),
@@ -53,6 +53,6 @@ articles to the archived entries. Run `wallabag-saver --help` for more usage ins
 
 - [x] Parallel saving
 - [x] Idempotent saving
-- [ ] Save articles from stdin
-- [ ] Delete articles
-- [ ] Cache wallabag articles locally for incremental saving
+- [x] Deleting articles
+- [ ] Saving articles from stdin
+- [ ] Caching wallabag articles locally for incremental saving
