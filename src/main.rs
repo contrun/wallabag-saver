@@ -26,15 +26,18 @@ impl From<&EntryInfo> for EntryID {
     }
 }
 
+#[derive(clap::ArgEnum, Copy, Clone, Debug, PartialEq)]
+enum Mode {
+    Create,
+    Archive,
+    Delete,
+}
+
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
 struct Args {
-    #[clap(short, long)]
-    create: bool,
-    #[clap(short, long)]
-    archive: bool,
-    #[clap(short, long)]
-    delete: bool,
+    #[clap(short, long, arg_enum)]
+    mode: Mode,
     #[clap(last = true)]
     urls: Vec<String>,
 }
@@ -45,7 +48,10 @@ pub struct State {
 }
 
 impl State {
-    async fn new<T: Into<String>>(urls: Vec<T>, create_non_existent_entries: bool) -> ClientResult<Self> {
+    async fn new<T: Into<String>>(
+        urls: Vec<T>,
+        create_non_existent_entries: bool,
+    ) -> ClientResult<Self> {
         let mut s = Self::new_with_ids_from_wallabag(urls).await?;
         if create_non_existent_entries {
             s.maybe_create_non_existent_entries().await;
@@ -262,22 +268,20 @@ async fn delete_entry_with_id(id: EntryID) -> ClientResult<Entry> {
 async fn main() -> Result<()> {
     let args = Args::parse();
 
-    let res = if args.archive {
-        State::archive_urls(args.urls)
+    let res = match args.mode {
+        Mode::Archive => State::archive_urls(args.urls)
             .await
-            .context("Failed to add archived entries")?
-    } else if args.delete {
-        State::delete_urls(args.urls)
+            .context("Failed to add archived entries")?,
+        Mode::Delete => State::delete_urls(args.urls)
             .await
-            .context("Failed to delete entries")?
-    } else {
-        State::create_urls(args.urls)
+            .context("Failed to delete entries")?,
+        Mode::Create => State::create_urls(args.urls)
             .await
-            .context("Failed to add entries")?
+            .context("Failed to create entries")?,
     };
 
     dbg!(&res);
-    if !args.delete {
+    if args.mode != Mode::Delete {
         res.check()
     } else {
         Ok(())

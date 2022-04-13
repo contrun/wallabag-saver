@@ -1,15 +1,15 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-This package grow from my own need to continuously move saved articles from pocket to wallabag.
-There are a few wallabag command line utilites to save url to wallabag,
+This package grows from my own need to continuously move saved articles from pocket to wallabag.
+There are a few wallabag command line utilites to save urls to wallabag,
 e.g. [Nepochal/wallabag-cli](https://github.com/Nepochal/wallabag-cli),
 [artur-shaik/wallabag-client](https://github.com/artur-shaik/wallabag-client),
 [gmolveau/pocket_to_wallabag](https://github.com/gmolveau/pocket_to_wallabag),
 [wsteitz/wallabag2pocket](https://github.com/wsteitz/wallabag2pocket).
 I tried most of them. Those are not suitable for my usage. Because, they have the following undesirable things
 * the need for human interaction (have to manually open browser)
-* not itempotent (running the script a second time will adding the same article)
+* not itempotent (running the script a second time will create a duplicated entry for the same article)
 * too slow when there are too many articles (sequentially running)
 I decide to build a client with async rust.
 
@@ -45,7 +45,7 @@ export WALLABAG_USERNAME=user
 export WALLABAG_PASSWORD=password
 ```
 
-After that, run `wallabag-saver -a -- https://archived.article.url/slug` to save
+After that, run `wallabag-saver -m archive -- https://archived.article.url/slug` to save
 articles to the archived entries. Run `wallabag-saver --help` for more usage instructions.
 
 <!-- ROADMAP -->
@@ -53,6 +53,7 @@ articles to the archived entries. Run `wallabag-saver --help` for more usage ins
 
 - [x] Parallel saving
 - [x] Idempotent saving
+- [x] Archiving articles
 - [x] Deleting articles
 - [ ] Saving articles from stdin
 - [ ] Caching wallabag articles locally for incremental saving
