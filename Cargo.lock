@@ -1859,9 +1859,9 @@ checksum = "9d5b2c62b4012a3e1eca5a7e077d13b3bf498c4073e33ccd58626607748ceeca"
 
 [[package]]
 name = "wallabag-api"
-version = "0.4.2"
+version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6c8083e59815ea9542b80749de3e7b9c8ec1a88167f362e143a780c4a91f1b23"
+checksum = "d1170de2af6f90aca06fe5e9693a5c4fc494e4f6f113261adc1f6dc4626026fd"
 dependencies = [
  "chrono",
  "log",
